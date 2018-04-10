@@ -2,6 +2,8 @@
 #ifndef BINARYSTRING_H
 #define BINARYSTRING_H
 #include <vector>
+#include <string>
+#include <iostream>
 
 using namespace std;
 

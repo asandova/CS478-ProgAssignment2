@@ -33,7 +33,7 @@ void test() {
 		"1537465ADCbA5FCC"
 	};
 	string truth[] = {
-		"66776A5855336E4A7261794751485973652F757A4C513D3D",
+		"7F08D75379C9ADAC909094A5088E01DA",
 		"2A36C8D4422E8D97141581F2C21FB3D2615D17B398E143EC",
 		"3923245A60E672626CF8CB7C1C46E592FBD999C575E52F73644E63165AD7638D"
 	};
@@ -50,9 +50,9 @@ void test() {
 		else {
 			cout << "Test " << i << ": Failed." << endl;
 		}
-		cout << "\tEOutput: " << E << endl;
-		cout << "\tDOutput: " << D << endl;
-		cout << "\t Truth : " << truth[i] << endl;
+		cout << "\tE-Output: " << E << endl;
+		cout << "\tD-Output: " << D << endl;
+		cout << "\t	 Truth : " << truth[i] << endl;
 	}
 }
 

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include "DES.h"
 #include "des_utils.h"
+#include <string>
 
 using namespace std;
 
@@ -92,28 +93,29 @@ string DES::Decrypt(string C) {
 	BString CHex = BString::TexttoHex(C);
 	BString Cipher = BString(CHex);
 
+	//spliting the cipher text into 64bit long blocks
 	vector<BString>Blocks = Cipher.Split(Cipher.size() / 64);
-	Blocks[Blocks.size() - 1] = encode(Blocks[Blocks.size() - 1]);
+	vector<BString>PBlocks = Blocks;
 	//CBC part of DES. Chaining each each block to its previous
 	for (size_t i = 0; i < Blocks.size(); i++) {
 		//performing the encoding prossess on the current block
 		if (CBC) {
-			Blocks[i] = decode(Blocks[i]);
-			if (i == 1) {
-				Blocks[i] = Blocks[i] ^ IV;
+			PBlocks[i] = decode(Blocks[i]);
+			if (i == 0) {
+				PBlocks[i] = PBlocks[i] ^ IV;
 			}
 			else {
-				Blocks[i] = Blocks[i] ^ Blocks[i - 1];
+				PBlocks[i] = PBlocks[i] ^ Blocks[i - 1];
 			}
 		}
 		else {
-			Blocks[i] = decode(Blocks[i]);
+			PBlocks[i] = decode(Blocks[i]);
 		}
 	}
 	//converting block to string representation
 	string plain = "";
 	vector<BString>::const_iterator itr;
-	for (itr = Blocks.begin(); itr != Blocks.end(); ++itr) {
+	for (itr = PBlocks.begin(); itr != PBlocks.end(); ++itr) {
 		plain += BString::BinarytoHex(*itr);
 	}
 	return BString::HextoText(plain);
@@ -157,7 +159,7 @@ void DES::GenSubKeys() {
 		CDkey.push_back(S[0]);
 		CDkey.push_back(S[1]);
 	}
-	for (size_t i = 0; i < CDkey.size()-1; i+=2) {
+	for (size_t i = 2; i < CDkey.size()-1; i+=2) {
 		//BString temp = BSConcat(CDkey[i], CDkey[i+1]);
 		subkeys.push_back(PCPermutate(CDkey[i] + CDkey[i+1], PC2, 1));
 	}
@@ -228,8 +230,10 @@ BString DES::Sbox(BString bs, int n) {
 		col += bs[i] - '0';
 		col << 1;
 	}
+	//getting value from SBox_n
 	size_t number = SBOXMAP[n][row * 16 + col];
 	BString result = BString(4,'0');
+	//converting to value to binarystring
 	for (int i = 3; i >= 0; i--) {
 		result[i] = (number % 2) + '0';
 		number /= 2;
@@ -241,71 +245,71 @@ BString DES::Sboxes(BString RB ){
 	*	Performes all SBox calculations on RB
 	**/
 	vector<BString> sections = RB.Split(8);
+	//creating place for Sbox results
 	BString Result = BString();
+	//Sboxes
 	for (size_t i = 0; i < 8; i++) {
-		sections[i] = Sbox(sections[i],i);
-		Result = Result + sections[i];
+		sections[i] = Sbox(sections[i],i);//B_i = S_i(B_i)
+		Result = Result + sections[i];//Result = Result + B_i
 	}
 	return Result;
 }
 BString DES::encode(BString b) {
+	//Inital Permutation
 	b = IFPermutate(b, IP);
 	//LR[0]: Left, LR[1]:Right
+	//spliting b in half
 	vector<BString> LR = b.Split(2);
 	BString L, R;
-	for (size_t i = 1; i <= 16; i++) {
-		//BString temp1, temp2, temp3;
-		//BString temp;
-		/*
-		temp1 = LR[1];					// temp1 = R_n-1
-		temp3 = f(LR[1], subkeys[i]);	//temp3 = f(R_n-1,K_n)
-		temp2 = LR[0] ^ temp3;			// temp2 = L_n-1 ^ temp3
-		LR[0] = temp1;					//L_n = temp1 = R_n-1
-		LR[1] = temp2;					//R_n = temp3 = L_n-1 ^ f(R_n-1,K_n);
-		*
-		temp = LR[1];
-		LR[1] = LR[0] ^ f(LR[1], subkeys[i]);
-		LR[0] = temp;
-		*/
+	//DES rounds
+	for (size_t i = 0; i < 16; i++) {
 		LR = DESRound(LR[0], LR[1], i);
 	}
+	//Final Permutation
 	return IFPermutate( LR[1] + LR[0] ,FP);
 }
 vector<BString> DES::DESRound(BString L, BString R, size_t key) {
+	/**
+		Performes one round of DES on L,R with subkey_key
+		key is an index in subkeys
+	*/
+	//creating a value to hold result
 	vector<BString> Result = vector<BString>(2,BString());
+	//swaping L and R
 	BString temp = R;
-	R = L ^ f(R, subkeys[key]);
+	R = L ^ f(R, subkeys[key]);	//R_n = L_n-1 ^ f(R_n-1,k_n)
 	L = temp;
+	//placeing L_n and R_n 
 	Result[0] = L;
 	Result[1] = R;
+
 	return Result;
 }
 BString DES::decode(BString b) {
+	//Initial Permuation on b
 	b = IFPermutate(b, IP);
+	//spliting b in two
 	vector<BString> LR = b.Split(2);
-	for (int i = 16; i > 0; i--) {
-		//BString temp1, temp2, temp3;
-		BString temp;
-		/*
-		temp1 = LR[1];					// temp1 = R_n-1
-		temp3 = f(LR[1], subkeys[i]);	//temp3 = f(R_n-1,K_n)
-		temp2 = LR[0] ^ temp3;			// temp2 = L_n-1 ^ temp3
-		LR[0] = temp1;					//L_n = temp1 = R_n-1
-		LR[1] = temp2;					//R_n = temp3 = L_n-1 ^ f(R_n-1,K_n);
-		*/
-		temp = LR[1];
-		LR[1] = LR[0] ^ f(LR[1], subkeys[i]);
-		LR[0] = temp;
+	//DES rounds
+	for (int i = 15; i >= 0; i--) {
+		LR = DESRound(LR[0], LR[1], i);
 	}
+	//Final Permutations
 	return IFPermutate(LR[1] + LR[0], FP);
 }
 ///Static methods
 BString DES::f(BString R, BString k) {
+	//explanding 32 bit to 48bits via expland table
 	R = Expand(R);
+	//XORing E(R) with k
 	BString r = R ^ k;
+	//spliting r in to 8 sections
 	vector<BString> sections = r.Split(8);
+	//storing sbox results
 	BString Result = Sboxes(r);
+	//Permutation Result with table P
 	Result = PPermuate(Result);
+
 	return Result;
 }
 

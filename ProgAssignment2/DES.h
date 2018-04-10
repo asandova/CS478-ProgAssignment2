@@ -2,12 +2,11 @@
 #define DES_H
 
 #include <vector>
+#include <string>
 #include "BinaryString.h"
 
 using namespace std;
 
-///To Help with readability
-typedef vector<char> HexString;
 
 class DES {
 public:
@@ -22,6 +21,7 @@ public:
 	string Encrypt(string P);
 
 	string Decrypt(string C);
+	///implemented
 	void setCBC(bool cbc);
 	///implemented
 	void setIV(BString iv);
@@ -56,6 +56,4 @@ private:
 	///implemented
 	static BString f(BString R, BString k);
 };
-
-
 #endif // !DES_H
