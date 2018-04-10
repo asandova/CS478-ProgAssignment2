@@ -162,8 +162,9 @@ BString BString::HextoBinary(string Hex) {
 	for (size_t i = 0; i < Hex.size(); i++) {
 		size_t j = i * 4;
 		char temp = Hex[i];
-		if (temp >= 'a' && temp <= 'z')
+		if (temp >= 'a' && temp <= 'z') {
 			temp = toupper(temp);
+		}
 		switch (temp)
 		{
 		case '0':
@@ -203,7 +204,7 @@ BString BString::HextoBinary(string Hex) {
 			bs[j + 3] = '1';
 			break;
 		case '6':
-			bs[i] = '0';
+			bs[j] = '0';
 			bs[j + 1] = '1';
 			bs[j + 2] = '1';
 			bs[j + 3] = '0';

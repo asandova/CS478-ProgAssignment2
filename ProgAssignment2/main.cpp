@@ -8,9 +8,10 @@
 using namespace std;
 
 void test1() {
+	//testing convertion functions
 	cout << BString::BinarytoHex(BString(4,'1') ) << endl;
-	cout << BString::HextoBinary("0123456789ABCDEF") << endl;
-	cout << BString::BinarytoHex(BString::HextoBinary("0123456789ABCDEF") ) << endl;
+	cout << BString::HextoBinary("153746") << endl;
+	cout << BString::BinarytoHex(BString::HextoBinary("153746") ) << endl;
 }
 
 void test() {
@@ -46,11 +47,12 @@ void test() {
 		else {
 			cout << "Test " << i << ": Failed." << endl;
 		}
-		cout << "\tE-Output: " << E << endl;
-		cout << "\tD-Output: " << D << endl;
-		cout << "\t  Truth : " << truth[i] << endl;
-		cout << "\t     KEY: " << tests[i].getKEY() << endl;
-		cout << "\t      IV: " << tests[i].getIV() << endl;
+		cout << "\t  E-OutHex: " << E << endl;
+		cout << "\t  D-OutHex: " << D << endl;
+		cout << "\t     Truth: " << truth[i] << endl;
+		cout << "\tD-OutPlain: " << BString::HextoText(D) << endl;;
+		cout << "\t       KEY: " << tests[i].getKEY() << endl;
+		cout << "\t        IV: " << tests[i].getIV() << endl;
 	}
 }
 

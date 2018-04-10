@@ -26,6 +26,7 @@ void DES::setKey(string KHex) {
 	*	the current key
 	**/
 	KEY =  BString::HextoBinary(KHex);
+	GenSubKeys();
 }
 void DES::setCBC(bool cbc) {
 	CBC = cbc;
@@ -51,17 +52,19 @@ string DES::Encrypt(string P) {
 	*	Encrypts plaintext P with current KEY and IV
 	**/
 	string cipher="";
-	GenSubKeys();
+	//GenSubKeys();
 	//BString r;
-	BString PHex = BString::TexttoHex(P);
-	BString Plain = BString( PHex );
+	string PHex = BString::TexttoHex(P);
+	BString PBinary = BString::HextoBinary(PHex);
+	BString End = BString::HextoBinary("0D0A");
+	PBinary = PBinary + End;
 
-	size_t missing = Plain.size() % 64;
+	size_t missing = PBinary.size() % 64;
 	if (missing != 0) {
-		Plain =  Plain + BString(64 - missing,'0' );
+		PBinary = PBinary + BString(64 - missing,'0' );
 	}
 	//Seperates the plaintest into blocks
-	vector<BString>Blocks = Plain.Split(Plain.size() / 64);
+	vector<BString>Blocks = PBinary.Split(PBinary.size() / 64);
 
 	//CBC part of DES. Chaining each each block to its previous
 	for (size_t i = 0; i < Blocks.size(); i++) {
@@ -90,15 +93,15 @@ string DES::Decrypt(string C) {
 	/**
 	*	Decrypts cipher text C with current KEY and IV
 	**/
-	BString CHex = BString::TexttoHex(C);
-	BString Cipher = BString(CHex);
+	string CHex = BString::TexttoHex(C);
+	BString CBinary = BString::HextoBinary(CHex);
 
 	//spliting the cipher text into 64bit long blocks
-	vector<BString>Blocks = Cipher.Split(Cipher.size() / 64);
+	vector<BString>Blocks = CBinary.Split(CBinary.size() / 64);
 	vector<BString>PBlocks = Blocks;
 	//CBC part of DES. Chaining each each block to its previous
 	for (size_t i = 0; i < Blocks.size(); i++) {
-		//performing the encoding prossess on the current block
+		//performing the decoding prossess on the current block
 		if (CBC) {
 			PBlocks[i] = decode(Blocks[i]);
 			if (i == 0) {
@@ -118,7 +121,7 @@ string DES::Decrypt(string C) {
 	for (itr = PBlocks.begin(); itr != PBlocks.end(); ++itr) {
 		plain += BString::BinarytoHex(*itr);
 	}
-	return BString::HextoText(plain);
+	return plain;
 }
 void DES::setIV(BString iv) { IV = iv; }
 string DES::getIV()const {
@@ -221,14 +224,15 @@ BString DES::Sbox(BString bs, int n) {
 	**/
 	size_t col=0, row=0;
 	//calculating row value
-	col = bs[0] - '0';
-	col << 1;
-	col += bs[5] - '0';
+	row = bs[0] - '0';
+	row << 1;
+	row += bs[5] - '0';
 	//calculating column value
 	col = 0;
 	for (size_t i = 1; i < 5; i++) {
 		col += bs[i] - '0';
-		col << 1;
+		if(i != 4)
+			col = col << 1;
 	}
 	//getting value from SBox_n
 	size_t number = SBOXMAP[n][row * 16 + col];
@@ -319,8 +323,8 @@ bool DES::Check(string k) {
 			//if any character in Hexstring is not a Hex character
 			//returns false
 			if (!((*itr >= '0' && *itr <= '9')	||
-				(*itr >= 'A' && *itr <= 'F')||
-				(*itr >= 'a' && *itr <= 'f'))) {
+				  (*itr >= 'A' && *itr <= 'F')	||
+				  (*itr >= 'a' && *itr <= 'f'))){
 				return false;
 			}
 		}
