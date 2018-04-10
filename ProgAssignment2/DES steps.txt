@@ -1,0 +1,50 @@
+	K = key:56bits, K+ = key:64 bits
+	DES Steps:
+		1: Keys
+			Permutate K+ with PC-1 -> K
+			split k into left and right halves: L: C_0:28bits ,R: D_0:28bits
+			create 16blocks C_n and D_n; n = 1,2,3,...,16
+			left shift by schedule:
+							Iteration	Number of
+							Number		Left Shifts
+							1			1
+							2			1
+							3			2
+							4			2
+							5			2
+							6			2
+							7			2
+							8			2
+							9			1
+							10			2
+							11			2
+							12			2
+							13			2
+							14			2
+							15			2
+							16			1
+			Create keys K_n by permutation C_n D_n with PC-2
+		2:Data Encode
+			permutate 64bit message with IP
+			if in CBC mode XOR plaintext with IV:64bits then apply IP
+			split permutated block into L_0 and R_0
+			repeat 16 times: n=1,2,3,...,16
+				L_n = R_n-1
+				R_n = L_n-1 ^ f(R_n-1, k_n)
+			f:
+				expand R_n-1 to 48 bits using Expansion table
+				XOR expanded R_n-1 with K_n
+
+				split result into 8 sectons of 8 bits
+				for each section i apply table S_i
+
+				permutate result with table P
+				return final value
+		3:
+			set L_i+1 = R_i
+			R_i+1 = L_i + f(R_i,K_i+1)
+			goto 2
+		4: Final
+			After 16 rounds
+			combine L_16 and R_16
+			permutate result with table FP
