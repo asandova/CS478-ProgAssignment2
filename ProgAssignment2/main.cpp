@@ -6,15 +6,12 @@
 #include <openssl\des.h>
 
 using namespace std;
-/*
+
 void test1() {
-	cout << "Testing:" << endl;
-	cout << "\tHex: " << BString::TexttoHex("Testing") << endl;
-	cout << "\tText: " << BString::HextoText(BString::TexttoHex("Testing")) << endl;
-	cout << "\tBinary: " << BString::HextoBinary(BString::TexttoHex("Testing")) << endl;
-	cout << "\tHex: " << BString::BinarytoHex(BString::HextoBinary(BString::TexttoHex("Testing"))) << endl;
-	cout << "15:" << BString::BinarytoHex(BString(8,'1'));
-}*/
+	cout << BString::BinarytoHex(BString(4,'1') ) << endl;
+	cout << BString::HextoBinary("0123456789ABCDEF") << endl;
+	cout << BString::BinarytoHex(BString::HextoBinary("0123456789ABCDEF") ) << endl;
+}
 
 void test() {
 	string input[] = {
@@ -30,7 +27,7 @@ void test() {
 	string IVs[] = {
 		"3835383439343739",
 		"DA39A3EE5E6B4B0D",
-		"1537465ADCbA5FCC"
+		"1537465ADCBA5FCC"
 	};
 	string truth[] = {
 		"7F08D75379C9ADAC909094A5088E01DA",
@@ -45,14 +42,15 @@ void test() {
 		string D = tests[i].Decrypt(E);
 		if (E == truth[i]) {
 			cout << "Test " << i << ": Passed!" << endl;
-
 		}
 		else {
 			cout << "Test " << i << ": Failed." << endl;
 		}
 		cout << "\tE-Output: " << E << endl;
 		cout << "\tD-Output: " << D << endl;
-		cout << "\t	 Truth : " << truth[i] << endl;
+		cout << "\t  Truth : " << truth[i] << endl;
+		cout << "\t     KEY: " << tests[i].getKEY() << endl;
+		cout << "\t      IV: " << tests[i].getIV() << endl;
 	}
 }
 

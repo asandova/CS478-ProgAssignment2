@@ -276,13 +276,9 @@ vector<BString> DES::DESRound(BString L, BString R, size_t key) {
 	//creating a value to hold result
 	vector<BString> Result = vector<BString>(2,BString());
 	//swaping L and R
-	BString temp = R;
-	R = L ^ f(R, subkeys[key]);	//R_n = L_n-1 ^ f(R_n-1,k_n)
-	L = temp;
-	//placeing L_n and R_n 
-	Result[0] = L;
+	Result[0] = R;
+	R = L ^ f(R,subkeys[key]);
 	Result[1] = R;
-
 	return Result;
 }
 BString DES::decode(BString b) {

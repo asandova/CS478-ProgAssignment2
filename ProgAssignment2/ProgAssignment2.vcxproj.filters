@@ -43,8 +43,10 @@
     <Text Include="DES steps.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="makefile.txt">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="makefile">
       <Filter>Resource Files</Filter>
-    </Text>
+    </None>
   </ItemGroup>
 </Project>

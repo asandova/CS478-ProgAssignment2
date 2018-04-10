@@ -93,9 +93,10 @@ string BString::BinarytoHex(BString bs) {
 		size_t val = 0;
 		for (size_t j = i; j < i + 4; j++) {
 			val += temp[j] - '0';
-			val = val << 1;
+			if(j != i+3)
+				val = val << 1;
 		}
-		HexVal.push_back((char)val);
+		HexVal.push_back(val);
 	}
 	vector<size_t>::const_iterator itr;
 	for (itr = HexVal.begin(); itr != HexVal.end(); ++itr) {
@@ -146,8 +147,11 @@ string BString::BinarytoHex(BString bs) {
 			case 14:
 				HexChar += 'E';
 				break;
+			case 15:
+				HexChar += "F";
+				break;
 			default:
-				HexChar += 'F';
+				cout <<  *itr << ": is not a valid Hex value" << endl;
 				break;
 		}
 	}
