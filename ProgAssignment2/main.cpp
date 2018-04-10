@@ -3,7 +3,7 @@
 #include "DES.h"
 #include <string>
 #include "BinaryString.h"
-#include <openssl\des.h>
+//#include <openssl\des.h>
 
 using namespace std;
 
@@ -37,6 +37,7 @@ void test() {
 	};
 	vector<DES> tests = vector<DES>(3,DES());
 	for (size_t i = 0; i < 3; i++) {
+		tests[i].setCBC(true);
 		tests[i].setKey(keys[i]);
 		tests[i].setIV(IVs[i]);
 		string E = tests[i].Encrypt(input[i]);

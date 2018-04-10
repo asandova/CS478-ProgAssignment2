@@ -13,7 +13,7 @@ public:
 	///implemented
 	DES();
 	///implemented
-	DES(BString IV, string KEY, bool CBC);
+	DES(string IV, string KEY, bool CBC);
 	void setKey(string KHex);
 	///implemented
 	string GenRandomKey();
@@ -24,7 +24,7 @@ public:
 	///implemented
 	void setCBC(bool cbc);
 	///implemented
-	void setIV(BString iv);
+	void setIV(string iv);
 	///implemented
 	string getIV()const;
 	///implemented

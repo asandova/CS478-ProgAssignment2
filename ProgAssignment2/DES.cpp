@@ -9,12 +9,16 @@ using namespace std;
 
 //Public
 DES::DES() {
+	//default constructor
 	subkeys = vector<BString>();
 	setKey(GenRandomKey());
-	setIV(BString(64, '0'));
+	setIV(string(16,'0'));
 	CBC = false;
 }
-DES::DES(BString IV, string KEY, bool CBC) {
+DES::DES(string IV, string KEY, bool CBC) {
+	// overloaded constuctor
+	// takes in a HEX string for IV amd KEY
+	// and a boolean value for CBC mode
 	setIV(IV);
 	setKey(KEY);
 	subkeys = vector<BString>();
@@ -25,6 +29,10 @@ void DES::setKey(string KHex) {
 	*	converts it to a binary string and sets that binary string as
 	*	the current key
 	**/
+	if (!Check(KHex)) {
+		cout << KHex << " is a Invalid Key" << endl;
+		exit(1);
+	}
 	KEY =  BString::HextoBinary(KHex);
 	GenSubKeys();
 }
@@ -70,7 +78,7 @@ string DES::Encrypt(string P) {
 	for (size_t i = 0; i < Blocks.size(); i++) {
 		//performing the encoding prossess on the current block
 		if (CBC) {
-			if (i == 1) {
+			if (i == 0) {
 				Blocks[i] = Blocks[i] ^ IV;
 			}
 			else {
@@ -96,6 +104,12 @@ string DES::Decrypt(string C) {
 	string CHex = BString::TexttoHex(C);
 	BString CBinary = BString::HextoBinary(CHex);
 
+	if (CBinary.size() % 64 != 0) {
+		cout << "ERROR: Given Cipher Text does not have a length that is a multiple of 64" << endl;
+		cout << "Cannont perform Decryption" << endl;
+		cout << "Exiting program..." << endl;
+		exit(1);
+	}
 	//spliting the cipher text into 64bit long blocks
 	vector<BString>Blocks = CBinary.Split(CBinary.size() / 64);
 	vector<BString>PBlocks = Blocks;
@@ -103,6 +117,7 @@ string DES::Decrypt(string C) {
 	for (size_t i = 0; i < Blocks.size(); i++) {
 		//performing the decoding prossess on the current block
 		if (CBC) {
+			//if CBC is true chain the blocks
 			PBlocks[i] = decode(Blocks[i]);
 			if (i == 0) {
 				PBlocks[i] = PBlocks[i] ^ IV;
@@ -112,6 +127,7 @@ string DES::Decrypt(string C) {
 			}
 		}
 		else {
+			//if CBC is false don't chain the blocks
 			PBlocks[i] = decode(Blocks[i]);
 		}
 	}
@@ -121,9 +137,16 @@ string DES::Decrypt(string C) {
 	for (itr = PBlocks.begin(); itr != PBlocks.end(); ++itr) {
 		plain += BString::BinarytoHex(*itr);
 	}
+	//returning the plain text in Hexadecimal
 	return plain;
 }
-void DES::setIV(BString iv) { IV = iv; }
+void DES::setIV(string iv) { 
+	if (!Check(iv)) {
+		cout << iv << " is not a value Initalization Vector" << endl;
+		exit(1);
+	}
+	IV = BString::HextoBinary(iv);
+}
 string DES::getIV()const {
 	/**
 	*	returns current Initiazation Value in Hexadecimal
