@@ -62,7 +62,7 @@ char& BString::operator[](size_t index) {
 const char& BString::operator[](size_t index)const {
 	return values[index];
 }
-vector<BString> BString::Split(int n) {
+vector<BString> BString::Split(int n)const {
 	vector<BString> s = vector<BString>();
 	BString temp = BString();
 	size_t splval = values.size() / n;
@@ -157,7 +157,8 @@ string BString::BinarytoHex(BString bs) {
 	}
 	return HexChar;
 }
-BString BString::HextoBinary(string Hex) {
+BString BString::HextoBinary(const string& Hex) {
+
 	BString bs = BString(Hex.size()*4,'0');
 	for (size_t i = 0; i < Hex.size(); i++) {
 		size_t j = i * 4;
@@ -271,7 +272,7 @@ BString BString::HextoBinary(string Hex) {
 	}
 	return bs;
 }
-string BString::TexttoHex(string text) {
+string BString::TexttoHex(const string& text) {
 	string Hex = "";
 
 	for (size_t i = 0; i < text.size(); i++) {
@@ -295,7 +296,7 @@ string BString::TexttoHex(string text) {
 	}
 	return Hex;
 }
-string BString::HextoText(string Hex) {
+string BString::HextoText(const string& Hex) {
 	string text = "";
 	for (size_t i = 0; i < Hex.size() - 1; i += 2) {
 		size_t val = 0;
@@ -324,8 +325,11 @@ string BString::HextoText(string Hex) {
 }
 ostream& operator<<(ostream& out, const BString& s) {
 	vector<char>::const_iterator itr;
-	for (itr = s.values.begin(); itr != s.values.end(); ++itr) {
-		cout << *itr;
+	size_t i = 1;
+	for (itr = s.values.begin(); itr != s.values.end(); ++itr, i++) {
+		out << *itr;
+		if (i % 8 == 0)
+			out << " ";
 	}
-	return cout;
+	return out;
 }

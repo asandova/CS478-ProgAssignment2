@@ -3,24 +3,25 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 #include "BinaryString.h"
 
 using namespace std;
-
 
 class DES {
 public:
 	///implemented
 	DES();
+	DES(const string& Key, bool CBC);
 	///implemented
-	DES(string IV, string KEY, bool CBC);
+	DES(const string& IV, const string& KEY, bool CBC);
 	void setKey(string KHex);
 	///implemented
-	string GenRandomKey();
+	static string GenRandomKey();
 
-	string Encrypt(string P);
+	string Encrypt(const string& P,bool ishex);
 
-	string Decrypt(string C);
+	string Decrypt(const string& C,bool ishex);
 	///implemented
 	void setCBC(bool cbc);
 	///implemented
@@ -36,24 +37,26 @@ private:
 	BString KEY;//64bits
 	vector<BString> subkeys;
 	bool CBC;
+	bool debug;
 	///implemented
 	void GenSubKeys();
 	BString encode(BString b);
-	vector<BString> DESRound(BString L, BString R, size_t Key);
+	//vector<BString> DESRound(BString L, BString R, size_t Key);
 	BString decode(BString b);
+	static vector<BString> DESRound(BString& L, BString& R, BString Key);
 	///implemented
-	static BString IFPermutate(BString bs, char* table);
+	static BString IFPermutate(BString& bs, char* table);
 	///implemented
-	static BString PPermuate(BString bs);
+	static BString PPermuate(BString& bs);
 	///implemented
-	static BString PCPermutate(BString bs, int* table,int num);
+	static BString PCPermutate(BString& bs, int* table,int num);
 	///implemented
-	static BString Expand(BString bs);
+	static BString Expand(BString& bs);
 	///implemented
-	static BString Sbox(BString bs,int n);
+	static BString Sbox(BString& bs,int n);
 	///implemented
-	static BString Sboxes(BString RB);
+	static BString Sboxes(BString& RB);
 	///implemented
-	static BString f(BString R, BString k);
+	static BString f(BString& R, BString& k);
 };
 #endif // !DES_H

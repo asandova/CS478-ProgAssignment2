@@ -23,13 +23,13 @@ class BString {
 		BString operator<<(size_t n);
 		char& operator[](size_t index);
 		const char& operator[](size_t index)const;
-		vector<BString> Split(int n);
+		vector<BString> Split(int n)const;
 		size_t size()const;
 		void pop_front();
 		static string BinarytoHex(BString bs);
-		static BString HextoBinary(string Hex);
-		static string TexttoHex(string text);
-		static string HextoText(string Hex);
+		static BString HextoBinary(const string& Hex);
+		static string TexttoHex(const string& text);
+		static string HextoText(const string& Hex);
 	private:
 		///holds all character values that make up the BString
 		vector<char> values;

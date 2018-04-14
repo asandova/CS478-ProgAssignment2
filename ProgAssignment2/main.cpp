@@ -9,12 +9,14 @@
 using namespace std;
 
 void test1() {
-	//testing convertion functions
-	cout << BString::BinarytoHex(BString(4,'1') ) << endl;
-	cout << BString::HextoBinary("153746") << endl;
-	cout << BString::BinarytoHex(BString::HextoBinary("153746") ) << endl;
-}
 
+	DES test = DES("3835383439343739","54455354494E4731",false);
+	cout << "--------------------------------------" << endl;
+	cout << test.Encrypt("Testing DES Encryption",false) << endl;
+	cout << "--------------------------------------" << endl;
+	cout << BString::HextoText(test.Decrypt("3631A23C1FD0F0346E080CA75FFD1BD747E7C1AE97B5532E",true)) << endl;
+}
+//used to set
 void test() {
 	string input[] = {
 		"This is a Test",
@@ -32,9 +34,9 @@ void test() {
 		"1537465ADCBA5FCC"
 	};
 	string truth[] = {
-		"7F08D75379C9ADAC909094A5088E01DA",
-		"2A36C8D4422E8D97141581F2C21FB3D2615D17B398E143EC",
-		"3923245A60E672626CF8CB7C1C46E592FBD999C575E52F73644E63165AD7638D"
+		"25BFADF6893268CB64EB99F3E05CDF79",
+		"253E43DD2B5C6548D9F5E0226320DA06FB9D962AC0D3C336",
+		"9E70DCEC6203F1524A2D57E33807EB42941172D3E66FC295AF38F05B1C7AB3EB"
 	};
 
 	vector<DES> tests = vector<DES>(3,DES());
@@ -45,8 +47,8 @@ void test() {
 			tests[i].setCBC(true);
 			tests[i].setKey(keys[i]);
 			tests[i].setIV(IVs[i]);
-			string E = tests[i].Encrypt(input[i]);
-			string D = tests[i].Decrypt(E);
+			string E = tests[i].Encrypt(input[i], false);
+			string D = tests[i].Decrypt(E,true);
 			if (E == truth[i]) {
 				outfile << "Test " << i << ": Passed!" << endl;
 			}
@@ -61,32 +63,51 @@ void test() {
 			outfile << "\t        IV: " << tests[i].getIV() << endl;
 		}
 		outfile.close();
+		cout << "Test case Results were outputed to DES_OUT.txt" << endl;
+	}
+	else
+	{
+		cout << "error opening out file" << endl;
 	}
 }
 void userinput() {
-	cout << "DES-CBC Encryption" << endl;
+	cout << "DES Encryption" << endl;
 	cout << "------------------------------" << endl;
 	cout << "Preform Encryption(0) or Decryption(1)?" << endl;
 	bool responce;
 	cin >> responce;
-	cout << "Use CBC mode: false(0) : True(1)" << endl;
-	bool cbc;
+	cout << "Use CBC mode?: false(0) : True(1)" << endl;
+	bool cbc, random;
 	cin >> cbc;
-	bool valid = 0;
-	string Key, IV;
-	while (!valid) {
-		cout << "Enter (In Hex)Key: " << endl;
-		cin >> Key;
-		cout << "Enter (In Hex)IV: " << endl;
-		cin >> IV;
-		if (!DES::Check(Key)) {
-			cout << "invalid Key\nMust be 16 Hex character long" << endl;
+	cout << "Use Random Key? False(0) : True(1)" << endl;
+	cin >> random;
+	bool validKey = 0,validIV = 0;
+	string Key, IV= "";
+	if (!random) {
+		while (!validKey) {
+			cout << "Enter (In Hex)Key: " << endl;
+			cin >> Key;
+			if (!DES::Check(Key)) {
+				cout << "invalid Key\nMust be 16 Hex character long" << endl;
+			}
+			else {
+				validKey = 1;
+			}
 		}
-		if (!DES::Check(IV)) {
-			cout << "Invalid IV\nMust be 16 Hex character long" << endl;
-		}
-		else {
-			valid = 1;
+	}
+	else {
+		Key = DES::GenRandomKey();
+	}
+	if (cbc) {
+		while (!validIV) {
+			cout << "Enter (In Hex)IV: " << endl;
+			cin >> IV;
+			if (!DES::Check(IV)) {
+				cout << "Invalid IV\nMust be 16 Hex character long" << endl;
+			}
+			else {
+				validIV = 1;
+			}
 		}
 	}
 	cout << "Enter File with " << (responce ? "Cipher Text" : "Plain Text") << endl;
@@ -109,19 +130,26 @@ void userinput() {
 	}
 	DES user = DES(IV,Key,cbc);
 	ofstream outfile;
-	outfile.open("DES_OUT.txt", fstream::out);
+	outfile.open("DES-OUT.txt", fstream::out);
+	outfile << "Key: " << Key << endl;
+	if (cbc) {
+		outfile << "IV: " << IV << endl;
+	}
+
 	if (!responce) {
-		outfile << user.Encrypt(input);
-		
+
+		outfile << user.Encrypt(input,false);
 	}
 	else {
-		outfile << user.Decrypt(input);
+		outfile << user.Decrypt(input,true);
 	}
 	outfile.close();
 	cout << "Answer: was output to File \"DES-Out.txt\" " << endl;
 }
+
 int main() {
-	test();
+	//test();
 	//test1();
+	userinput();
 	return 0;
 }

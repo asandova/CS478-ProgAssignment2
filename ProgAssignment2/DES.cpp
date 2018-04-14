@@ -1,6 +1,7 @@
 
 #include <vector>
 #include <cstdlib>
+#include <fstream>
 #include "DES.h"
 #include "des_utils.h"
 #include <string>
@@ -15,13 +16,20 @@ DES::DES() {
 	setIV(string(16,'0'));
 	CBC = false;
 }
-DES::DES(string IV, string KEY, bool CBC) {
+DES::DES(const string& Key, bool cbc) {
+	subkeys = vector<BString>();
+	setKey(Key);
+	setIV("");
+	CBC = cbc;
+}
+DES::DES(const string& IV, const string& KEY, bool cbc) {
 	// overloaded constuctor
 	// takes in a HEX string for IV amd KEY
 	// and a boolean value for CBC mode
+	subkeys = vector<BString>();
 	setIV(IV);
 	setKey(KEY);
-	subkeys = vector<BString>();
+	CBC = cbc;
 }
 void DES::setKey(string KHex) {
 	/**
@@ -33,7 +41,7 @@ void DES::setKey(string KHex) {
 		cout << KHex << " is a Invalid Key" << endl;
 		exit(1);
 	}
-	KEY =  BString::HextoBinary(KHex);
+	KEY = BString::HextoBinary(KHex);
 	GenSubKeys();
 }
 void DES::setCBC(bool cbc) {
@@ -55,18 +63,19 @@ string DES::GenRandomKey() {
 	}
 	return K;
 }
-string DES::Encrypt(string P) {
+string DES::Encrypt(const string& P,bool ishex) {
 	/**
 	*	Encrypts plaintext P with current KEY and IV
 	**/
 	string cipher="";
-	//GenSubKeys();
-	//BString r;
-	string PHex = BString::TexttoHex(P);
-	BString PBinary = BString::HextoBinary(PHex);
-	BString End = BString::HextoBinary("0D0A");
-	PBinary = PBinary + End;
-
+	BString PBinary;
+	if (ishex) {
+		PBinary = BString::HextoBinary(P);
+	}
+	else {
+		string PHex = BString::TexttoHex(P);
+		PBinary = BString::HextoBinary(PHex);
+	}
 	size_t missing = PBinary.size() % 64;
 	if (missing != 0) {
 		PBinary = PBinary + BString(64 - missing,'0' );
@@ -97,15 +106,20 @@ string DES::Encrypt(string P) {
 	}
 	return cipher;
 }
-string DES::Decrypt(string C) {
+string DES::Decrypt(const string& C,bool isHex) {
 	/**
 	*	Decrypts cipher text C with current KEY and IV
 	**/
-	string CHex = BString::TexttoHex(C);
-	BString CBinary = BString::HextoBinary(CHex);
-
+	BString CBinary;
+	if (isHex) {
+		CBinary = BString::HextoBinary(C);
+	}
+	else {
+		string CHex = BString::TexttoHex(C);
+		CBinary = BString::HextoBinary(CHex);
+	}
 	if (CBinary.size() % 64 != 0) {
-		cout << "ERROR: Given Cipher Text does not have a length that is a multiple of 64" << endl;
+		cout << "ERROR: Given Cipher Text Binary string does not have a length that is a multiple of 64" << endl;
 		cout << "Cannont perform Decryption" << endl;
 		cout << "Exiting program..." << endl;
 		exit(1);
@@ -142,7 +156,7 @@ string DES::Decrypt(string C) {
 }
 void DES::setIV(string iv) { 
 	if (!Check(iv)) {
-		cout << iv << " is not a value Initalization Vector" << endl;
+		cout << iv << " is not a valid Initalization Vector" << endl;
 		exit(1);
 	}
 	IV = BString::HextoBinary(iv);
@@ -171,27 +185,24 @@ void DES::GenSubKeys() {
 	CDkey.push_back(S[1]);
 	for (size_t i = 1; i <= 16; i++) {
 		if (i <= 2 || i == 9 || i == 16) {
-			//LeftShift(S[0], 1);
 			S[0] = S[0] << 1;
-			//LeftShift(S[1], 1);
 			S[1] = S[1] << 1;
 		}
 		else {
-			//LeftShift(S[0], 2);
 			S[0] = S[0] << 2;
-			//LeftShift(S[1], 2);
 			S[1] = S[1] << 2;
 		}
 		CDkey.push_back(S[0]);
 		CDkey.push_back(S[1]);
 	}
 	for (size_t i = 2; i < CDkey.size()-1; i+=2) {
-		//BString temp = BSConcat(CDkey[i], CDkey[i+1]);
-		subkeys.push_back(PCPermutate(CDkey[i] + CDkey[i+1], PC2, 1));
+		BString CD = CDkey[i] + CDkey[i + 1];
+		BString temp = PCPermutate(CD, PC2, 1);
+		subkeys.push_back(temp);
 	}
 }
 
-BString DES::IFPermutate(BString bs, char* table) {
+BString DES::IFPermutate(BString& bs, char* table) {
 	/**
 	*	Performes DES Permutation with table for either
 	*	Intial permutation table or Final permutation table
@@ -203,7 +214,7 @@ BString DES::IFPermutate(BString bs, char* table) {
 	}
 	return r;
 }
-BString DES::PPermuate(BString bs) {
+BString DES::PPermuate(BString& bs) {
 	/*
 		Does DES permutation on BS according to table P
 	*/
@@ -214,15 +225,17 @@ BString DES::PPermuate(BString bs) {
 	}
 	return r;
 }
-BString DES::PCPermutate(BString bs, int* table, int num) {
+BString DES::PCPermutate(BString& bs, int* table, int num) {
 	/**
 	*	Does DES Permutation on a BinaryString with either PC-1 or PC-2 tables 
 	**/
 	int n;
-	if (num == 0)
+	if (num == 0) {
 		n = 56;
-	else
+	}
+	else {
 		n = 48;
+	}
 	BString r = BString(n, '0');
 	for (size_t i = 0; i < n; i++) {
 		size_t p = table[i];
@@ -230,7 +243,7 @@ BString DES::PCPermutate(BString bs, int* table, int num) {
 	}
 	return r;
 }
-BString DES::Expand(BString bs) {
+BString DES::Expand(BString& bs) {
 	/*
 		Expands a 32 bit binarystring to 48bits
 	*/
@@ -241,24 +254,25 @@ BString DES::Expand(BString bs) {
 	}
 	return Ebs;
 }
-BString DES::Sbox(BString bs, int n) {
+BString DES::Sbox(BString& bs, int n) {
 	/**
 	*	Performes a single DES Sbox calculation with SBox table n
 	**/
 	size_t col=0, row=0;
 	//calculating row value
 	row = bs[0] - '0';
-	row << 1;
+	row = row << 1;
 	row += bs[5] - '0';
 	//calculating column value
 	col = 0;
 	for (size_t i = 1; i < 5; i++) {
 		col += bs[i] - '0';
-		if(i != 4)
+		if(i < 4)
 			col = col << 1;
 	}
 	//getting value from SBox_n
-	size_t number = SBOXMAP[n][row * 16 + col];
+	size_t index = (row * 16) + col;
+	size_t number = SBOXMAP[n][index];
 	BString result = BString(4,'0');
 	//converting to value to binarystring
 	for (int i = 3; i >= 0; i--) {
@@ -267,7 +281,7 @@ BString DES::Sbox(BString bs, int n) {
 	}
 	return result;
 }
-BString DES::Sboxes(BString RB ){
+BString DES::Sboxes(BString& RB ){
 	/**
 	*	Performes all SBox calculations on RB
 	**/
@@ -284,18 +298,18 @@ BString DES::Sboxes(BString RB ){
 BString DES::encode(BString b) {
 	//Inital Permutation
 	b = IFPermutate(b, IP);
-	//LR[0]: Left, LR[1]:Right
-	//spliting b in half
 	vector<BString> LR = b.Split(2);
-	BString L, R;
-	//DES rounds
-	for (size_t i = 0; i < 16; i++) {
-		LR = DESRound(LR[0], LR[1], i);
+	vector<BString>::const_iterator itr;
+	for (itr = subkeys.begin(); itr != subkeys.end(); ++itr) {
+	//for (size_t i = 0; i < 16; i++) {
+		LR = DESRound(LR[0], LR[1], *itr);
 	}
 	//Final Permutation
-	return IFPermutate( LR[1] + LR[0] ,FP);
+	BString temp = LR[1] + LR[0];
+	return IFPermutate( temp,FP);
 }
-vector<BString> DES::DESRound(BString L, BString R, size_t key) {
+//vector<BString> DES::DESRound(BString L, BString R, size_t key) {
+vector<BString> DES::DESRound(BString& L, BString& R, BString key) {
 	/**
 		Performes one round of DES on L,R with subkey_key
 		key is an index in subkeys
@@ -304,8 +318,10 @@ vector<BString> DES::DESRound(BString L, BString R, size_t key) {
 	vector<BString> Result = vector<BString>(2,BString());
 	//swaping L and R
 	Result[0] = R;
-	R = L ^ f(R,subkeys[key]);
+	R = L ^ f(R, key);
+	//R = L ^ f(R,subkeys[key]);
 	Result[1] = R;
+
 	return Result;
 }
 BString DES::decode(BString b) {
@@ -314,14 +330,17 @@ BString DES::decode(BString b) {
 	//spliting b in two
 	vector<BString> LR = b.Split(2);
 	//DES rounds
-	for (int i = 15; i >= 0; i--) {
-		LR = DESRound(LR[0], LR[1], i);
+	vector<BString>::const_reverse_iterator itr;
+	for (itr = subkeys.rbegin(); itr != subkeys.rend(); ++itr) {
+	//for (int i = 15; i > 0; i--) {
+		LR = DESRound(LR[0], LR[1], *itr);
 	}
 	//Final Permutations
-	return IFPermutate(LR[1] + LR[0], FP);
+	BString temp = LR[1] + LR[0];
+	return IFPermutate(temp, FP);
 }
 ///Static methods
-BString DES::f(BString R, BString k) {
+BString DES::f(BString& R, BString& k) {
 	//explanding 32 bit to 48bits via expland table
 	R = Expand(R);
 	//XORing E(R) with k
@@ -329,10 +348,9 @@ BString DES::f(BString R, BString k) {
 	//spliting r in to 8 sections
 	vector<BString> sections = r.Split(8);
 	//storing sbox results
-	BString Result = Sboxes(r);
+ 	BString Result = Sboxes(r);
 	//Permutation Result with table P
 	Result = PPermuate(Result);
-
 	return Result;
 }
 
