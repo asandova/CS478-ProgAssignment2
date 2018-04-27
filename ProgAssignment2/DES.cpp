@@ -1,4 +1,10 @@
-
+/*
+*	Author: August B. Sandoval
+*	File: DES.cpp
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: Contains DES Class definitions
+*/
 #include <vector>
 #include <cstdlib>
 #include <fstream>
@@ -17,15 +23,22 @@ DES::DES() {
 	CBC = false;
 }
 DES::DES(const string& Key, bool cbc) {
+	/*
+	*	overloaded constructor
+	*	takes in a Hex string for Key
+	*	and a boolean value for CBC mode
+	*/
 	subkeys = vector<BString>();
 	setKey(Key);
-	setIV("");
+	setIV("0000000000000000");
 	CBC = cbc;
 }
 DES::DES(const string& IV, const string& KEY, bool cbc) {
-	// overloaded constuctor
-	// takes in a HEX string for IV amd KEY
-	// and a boolean value for CBC mode
+	/*
+	* overloaded constuctor
+	* takes in a HEX string for IV amd KEY
+	* and a boolean value for CBC mode
+	*/
 	subkeys = vector<BString>();
 	setIV(IV);
 	setKey(KEY);
@@ -78,7 +91,7 @@ string DES::Encrypt(const string& P,bool ishex) {
 	}
 	size_t missing = PBinary.size() % 64;
 	if (missing != 0) {
-		PBinary = PBinary + BString(64 - missing,'0' );
+		PBinary = PBinary + BString(64 - missing, '0' );
 	}
 	//Seperates the plaintest into blocks
 	vector<BString>Blocks = PBinary.Split(PBinary.size() / 64);
@@ -104,6 +117,10 @@ string DES::Encrypt(const string& P,bool ishex) {
 	for (itr = Blocks.begin(); itr != Blocks.end(); ++itr) {
 		cipher += BString::BinarytoHex(*itr);
 	}
+	if (!ishex) {
+		cipher = BString::HextoText(cipher);
+		return cipher;
+	}
 	return cipher;
 }
 string DES::Decrypt(const string& C,bool isHex) {
@@ -118,7 +135,11 @@ string DES::Decrypt(const string& C,bool isHex) {
 		string CHex = BString::TexttoHex(C);
 		CBinary = BString::HextoBinary(CHex);
 	}
+	//cout << CBinary.size() << endl;
 	if (CBinary.size() % 64 != 0) {
+		//int missing = CBinary.size() % 64;
+		//CBinary = CBinary + BString::BString(64-missing, '0');
+		
 		cout << "ERROR: Given Cipher Text Binary string does not have a length that is a multiple of 64" << endl;
 		cout << "Cannont perform Decryption" << endl;
 		cout << "Exiting program..." << endl;
@@ -152,9 +173,15 @@ string DES::Decrypt(const string& C,bool isHex) {
 		plain += BString::BinarytoHex(*itr);
 	}
 	//returning the plain text in Hexadecimal
+	if (!isHex) {
+		return BString::HextoText(plain);
+	}
 	return plain;
 }
 void DES::setIV(string iv) { 
+	/*
+		Sets the IV value after checking if correct
+	*/
 	if (!Check(iv)) {
 		cout << iv << " is not a valid Initalization Vector" << endl;
 		exit(1);
@@ -348,7 +375,9 @@ BString DES::f(BString& R, BString& k) {
 	//spliting r in to 8 sections
 	vector<BString> sections = r.Split(8);
 	//storing sbox results
+	//cout << r << endl;
  	BString Result = Sboxes(r);
+	//cout << Result << endl;
 	//Permutation Result with table P
 	Result = PPermuate(Result);
 	return Result;

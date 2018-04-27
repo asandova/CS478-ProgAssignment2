@@ -1,3 +1,11 @@
+/*
+*	Author: August B. Sandoval
+*	File: BinaryString.cpp
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: Contains BString Class definitions
+*/
+
 #include <vector>
 #include <iostream>
 #include <cctype>
@@ -277,8 +285,15 @@ string BString::TexttoHex(const string& text) {
 
 	for (size_t i = 0; i < text.size(); i++) {
 		size_t HV[2];
-		HV[0] = text[i] % 16;
-		HV[1] = (text[i]/16) % 16;
+		unsigned char HChar = text[i];
+		/*if (text[i] < 0) {
+			HChar =(text[i] * -1);
+		}
+		else {
+			HChar = text[i];
+		}*/
+		HV[0] = (HChar) % 16;
+		HV[1] = (HChar /16) % 16;
 		if (HV[1] < 10) {
 			Hex = Hex + (char)(HV[1] + '0');
 		}

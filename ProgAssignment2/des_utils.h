@@ -1,4 +1,9 @@
-#pragma once
+/*
+*	File: des_utils.h
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: Contains DES table declarations
+*/
 #ifndef DES_UTILS_H
 #define DES_UTILS_H
 

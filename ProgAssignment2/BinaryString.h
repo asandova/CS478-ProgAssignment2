@@ -1,4 +1,10 @@
-#pragma once
+/*
+*	Author: August B. Sandoval
+*	File: BinaryString.h
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: contains BString class Declarations
+*/
 #ifndef BINARYSTRING_H
 #define BINARYSTRING_H
 #include <vector>

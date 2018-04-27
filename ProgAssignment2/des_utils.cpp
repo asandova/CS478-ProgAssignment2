@@ -1,3 +1,11 @@
+/*
+*	
+*	File: des_utils.cpp
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: Contains DES table definitions
+*/
+
 /********************************************/
 /* Tables for initial and final permutation */
 /********************************************/

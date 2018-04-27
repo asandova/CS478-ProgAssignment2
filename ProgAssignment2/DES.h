@@ -1,3 +1,10 @@
+/*
+*	Author: August B. Sandoval
+*	File: DES.h
+*	Class: CS478
+*	Date: 4/13/18
+*	Purpose: Contains class DES declarations
+*/
 #ifndef DES_H
 #define DES_H
 
